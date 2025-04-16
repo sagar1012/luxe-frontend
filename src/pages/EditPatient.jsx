@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
     Box,
@@ -24,18 +24,18 @@ const EditPatient = () => {
     const [snack, setSnack] = useState({ open: false, message: "", severity: "success" });
     const [errors, setErrors] = useState({});
 
-    const fetchPatient = async () => {
+    const fetchPatient = useCallback(async () => {
         try {
             const res = await axios.get(`https://luxe-api-production-d5c9.up.railway.app/api/patients/${id}`);
             setFormData(res.data);
         } catch (err) {
             setSnack({ open: true, message: "Failed to load patient", severity: "error" });
         }
-    };
+    }, [id]);
 
     useEffect(() => {
         fetchPatient();
-    }, [id]);
+    }, [fetchPatient]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
