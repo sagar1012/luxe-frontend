@@ -1,24 +1,21 @@
-import logo from './logo.svg';
-import './App.css';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import LoginPage from './pages/LoginPage';
+import Dashboard from './pages/Dashboard';
+import AddPatient from './pages/AddPatient';
+import EditPatient from './pages/EditPatient';
+
+const isAuthenticated = () => !!localStorage.getItem('authToken');
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<LoginPage />} />
+        <Route path="/dashboard" element={isAuthenticated() ? <Dashboard /> : <Navigate to="/" />} />
+        <Route path="/add-patient" element={isAuthenticated() ? <AddPatient /> : <Navigate to="/" />} />
+        <Route path="/edit-patient/:id" element={isAuthenticated() ? <EditPatient /> : <Navigate to="/" />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
