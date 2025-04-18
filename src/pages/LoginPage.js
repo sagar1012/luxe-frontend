@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Container, Paper, Typography, TextField, Button, Box, IconButton, InputAdornment
@@ -49,7 +49,9 @@ const LoginPage = () => {
 
             if (data?.token) {
                 localStorage.setItem('authToken', data.token);
-                navigate('/dashboard');
+                setTimeout(() => {
+                    navigate('/dashboard');
+                }, 3000);
             } else {
                 setError(data.message || 'Login failed');
             }

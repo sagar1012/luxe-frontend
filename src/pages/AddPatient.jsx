@@ -1,13 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-    Box,
-    TextField,
-    Button,
-    Typography,
-    Snackbar,
-    Alert,
-    Paper,
+    Box, TextField, Button, Typography, Snackbar, Alert, Paper, Grid
 } from "@mui/material";
 import axios from "axios";
 
@@ -17,25 +11,45 @@ const AddPatient = () => {
         lastName: "",
         age: "",
         contactNo: "",
-        address: "",
+        addressLine1: "",
+        addressLine2: "",
+        city: "",
+        state: "",
+        zipcode: "",
+        startDate: new Date().toISOString().split("T")[0],
     });
+
     const [snack, setSnack] = useState({ open: false, message: "", severity: "success" });
     const [errors, setErrors] = useState({});
     const navigate = useNavigate();
 
+    const formatPhone = (value) => {
+        const cleaned = value.replace(/\D/g, "").slice(0, 10); // Only numbers, max 10 digits
+        if (cleaned.length < 4) return cleaned;
+        if (cleaned.length < 7) return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3)}`;
+        return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6, 10)}`;
+    };
+
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
+        if (name === "contactNo") {
+            setFormData((prev) => ({
+                ...prev,
+                [name]: formatPhone(value),
+            }));
+        } else {
+            setFormData((prev) => ({ ...prev, [name]: value }));
+        }
     };
 
     const validateForm = () => {
         const newErrors = {};
-        const phoneRegex = /^\+\d{10,15}$/; // + followed by 10-15 digits
+        const rawNumber = formData.contactNo.replace(/\D/g, ""); // Strip formatting
 
         if (!formData.contactNo) {
             newErrors.contactNo = "Contact number is required";
-        } else if (!phoneRegex.test(formData.contactNo)) {
-            newErrors.contactNo = "Include country code, e.g. +1234567890";
+        } else if (rawNumber.length !== 10) {
+            newErrors.contactNo = "Phone number must be 10 digits";
         }
 
         setErrors(newErrors);
@@ -46,8 +60,13 @@ const AddPatient = () => {
         e.preventDefault();
         if (!validateForm()) return;
 
+        const payload = {
+            ...formData,
+            contactNo: `+1${formData.contactNo.replace(/\D/g, "")}`, // Send the raw number with +1
+        };
+
         try {
-            await axios.post("https://luxe-api-production-d5c9.up.railway.app/api/patients/add", formData);
+            await axios.post("https://luxe-api-production-d5c9.up.railway.app/api/patients/add", payload);
             setSnack({ open: true, message: "Patient added successfully!", severity: "success" });
             setTimeout(() => navigate("/dashboard"), 1500);
         } catch (error) {
@@ -72,7 +91,7 @@ const AddPatient = () => {
                 sx={{
                     p: 4,
                     width: "100%",
-                    maxWidth: 600,
+                    maxWidth: 700,
                     borderRadius: "16px",
                     backgroundColor: "white",
                 }}
@@ -82,58 +101,108 @@ const AddPatient = () => {
                 </Typography>
 
                 <form onSubmit={handleSubmit}>
-                    <TextField
-                        label="First Name"
-                        name="firstName"
-                        value={formData.firstName}
-                        onChange={handleChange}
-                        fullWidth
-                        margin="normal"
-                        required
-                        sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
-                    />
-                    <TextField
-                        label="Last Name"
-                        name="lastName"
-                        value={formData.lastName}
-                        onChange={handleChange}
-                        fullWidth
-                        margin="normal"
-                        required
-                        sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
-                    />
-                    <TextField
-                        label="Age"
-                        name="age"
-                        value={formData.age}
-                        onChange={handleChange}
-                        fullWidth
-                        margin="normal"
-                        sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
-                    />
-                    <TextField
-                        label="Contact Number (with country code)"
-                        name="contactNo"
-                        value={formData.contactNo}
-                        onChange={handleChange}
-                        fullWidth
-                        margin="normal"
-                        required
-                        error={!!errors.contactNo}
-                        helperText={errors.contactNo}
-                        sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
-                        placeholder="+1234567890"
-                    />
-                    <TextField
-                        label="Address"
-                        name="address"
-                        value={formData.address}
-                        onChange={handleChange}
-                        fullWidth
-                        margin="normal"
-                        sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
-                    />
-                    <Box mt={2} display="flex" justifyContent="space-between">
+                    <Grid container spacing={2}>
+                        <Grid item xs={12} sm={6}>
+                            <TextField
+                                label="First Name"
+                                name="firstName"
+                                value={formData.firstName}
+                                onChange={handleChange}
+                                fullWidth
+                                required
+                            />
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                            <TextField
+                                label="Last Name"
+                                name="lastName"
+                                value={formData.lastName}
+                                onChange={handleChange}
+                                fullWidth
+                                required
+                            />
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                            <TextField
+                                label="Age"
+                                name="age"
+                                value={formData.age}
+                                onChange={handleChange}
+                                fullWidth
+                            />
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                            <TextField
+                                label="Contact Number"
+                                name="contactNo"
+                                value={formData.contactNo}
+                                onChange={handleChange}
+                                fullWidth
+                                required
+                                error={!!errors.contactNo}
+                                helperText={errors.contactNo}
+                                placeholder="(123) 456-7890"
+                            />
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                            <TextField
+                                label="Address Line 1"
+                                name="addressLine1"
+                                value={formData.addressLine1}
+                                onChange={handleChange}
+                                fullWidth
+                            />
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                            <TextField
+                                label="Address Line 2"
+                                name="addressLine2"
+                                value={formData.addressLine2}
+                                onChange={handleChange}
+                                fullWidth
+                            />
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                            <TextField
+                                label="City"
+                                name="city"
+                                value={formData.city}
+                                onChange={handleChange}
+                                fullWidth
+                            />
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                            <TextField
+                                label="State"
+                                name="state"
+                                value={formData.state}
+                                onChange={handleChange}
+                                fullWidth
+                            />
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                            <TextField
+                                label="Zip Code"
+                                name="zipcode"
+                                value={formData.zipcode}
+                                onChange={handleChange}
+                                fullWidth
+                            />
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                            <TextField
+                                label="Start Date"
+                                name="startDate"
+                                type="date"
+                                value={formData.startDate}
+                                onChange={handleChange}
+                                InputLabelProps={{ shrink: true }}
+                                fullWidth
+                            />
+                        </Grid>
+                    </Grid>
+
+                    <Box mt={3} display="flex" justifyContent="space-between">
                         <Button
                             variant="outlined"
                             onClick={handleBack}

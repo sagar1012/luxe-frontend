@@ -60,6 +60,16 @@ const Dashboard = () => {
         navigate('/add-patient');
     };
 
+    const handleSendMessage = async (patient) => {
+        try {
+            await axios.post('https://luxe-api-production-d5c9.up.railway.app/api/patients/send-message', patient);
+            alert("Message sent successfully!");
+        } catch (error) {
+            console.error("Failed to send message", error);
+            alert("Failed to send message.");
+        }
+    };
+
     return (
         <Box sx={{ fontFamily: 'Oxygen, Helvetica, Arial, Lucida, sans-serif', bgcolor: '#f8f6f2', minHeight: '100vh' }}>
             {/* Header */}
@@ -100,6 +110,7 @@ const Dashboard = () => {
                                 <TableCell sx={{ color: '#fff' }}>Age</TableCell>
                                 <TableCell sx={{ color: '#fff' }}>Contact</TableCell>
                                 <TableCell sx={{ color: '#fff' }}>Address</TableCell>
+                                <TableCell sx={{ color: '#fff' }}>Start Date</TableCell>
                                 <TableCell sx={{ color: '#fff' }} align="center">Actions</TableCell>
                             </TableRow>
                         </TableHead>
@@ -110,14 +121,36 @@ const Dashboard = () => {
                                     <TableCell>{patient.lastName || '-'}</TableCell>
                                     <TableCell>{patient.age || '-'}</TableCell>
                                     <TableCell>{patient.contactNo}</TableCell>
-                                    <TableCell>{patient.address || '-'}</TableCell>
+                                    <TableCell>
+                                        {`${patient.addressLine1 || ''} ${patient.addressLine2 || ''}`.trim() || '-'}
+                                    </TableCell>
+                                    <TableCell>
+                                        {patient.startDate ? new Date(patient.startDate).toLocaleDateString() : '-'}
+                                    </TableCell>
                                     <TableCell align="center">
-                                        <IconButton onClick={() => handleEdit(patient._id)}>
-                                            <EditIcon sx={{ color: '#7b6e4b' }} />
-                                        </IconButton>
-                                        <IconButton onClick={() => handleDelete(patient._id)}>
-                                            <DeleteIcon sx={{ color: '#7b6e4b' }} />
-                                        </IconButton>
+                                        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: 'center' }}>
+                                            <IconButton onClick={() => handleEdit(patient._id)}>
+                                                <EditIcon sx={{ color: '#7b6e4b' }} />
+                                            </IconButton>
+                                            <IconButton onClick={() => handleDelete(patient._id)}>
+                                                <DeleteIcon sx={{ color: '#7b6e4b' }} />
+                                            </IconButton>
+                                            <Button
+                                                variant="outlined"
+                                                onClick={() => handleSendMessage(patient)}
+                                                sx={{
+                                                    borderColor: '#7b6e4b',
+                                                    color: '#7b6e4b',
+                                                    textTransform: 'none',
+                                                    '&:hover': {
+                                                        backgroundColor: '#7b6e4b',
+                                                        color: '#fff'
+                                                    }
+                                                }}
+                                            >
+                                                Send Message
+                                            </Button>
+                                        </Box>
                                     </TableCell>
                                 </TableRow>
                             ))}
